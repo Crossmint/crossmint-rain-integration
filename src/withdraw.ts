@@ -125,6 +125,11 @@ async function executeWithdrawal(
   sig: string,
   rainAdminPublicKey: string
 ): Promise<string> {
+
+  const saltHex = Buffer.from(salt).toString("hex");
+  console.log("Salt:", salt);
+  console.log("Hex salt", saltHex);
+
   const result = await stellarWallet.sendTransaction({
     contractId: coordinatorAddress,
     method: "withdraw_assets",
@@ -135,9 +140,9 @@ async function executeWithdrawal(
       amount: amount.toString(),
       recipient: recipientAddress,
       expires_at: expiresAt,
-      salt: salt, // type: scSpecTypeBytesN
-      signature: Buffer.from(sig, "hex"),
-      admin_public_key: Buffer.from(rainAdminPublicKey, "hex"),
+      salt: saltHex, // type: scSpecTypeBytesN
+      signature: sig,
+      public_key: rainAdminPublicKey,
     },
   });
 
@@ -160,41 +165,48 @@ async function executeWithdrawalRaw(
   const rpcUrl = process.env.STELLAR_RPC_URL;
   if (!rpcUrl) throw new Error("STELLAR_RPC_URL is not set");
 
-  const walletSecret = process.env.STELLAR_WALLET_SECRET;
-  if (!walletSecret) throw new Error("STELLAR_WALLET_SECRET is not set");
+  const { Client, AssembledTransaction } = await import("@stellar/stellar-sdk/contract");
 
-  const keypair = StellarSdk.Keypair.fromSecret(walletSecret);
-  const rpc = new StellarSdk.rpc.Server(rpcUrl);
-  const { passphrase: networkPassphrase } = await rpc.getNetwork();
-  const account = await rpc.getAccount(ADMIN_ADDRESS);
+  const server = new StellarSdk.rpc.Server(rpcUrl);
+  const { passphrase: networkPassphrase } = await server.getNetwork();
 
-  const contract = new StellarSdk.Contract(coordinatorAddress);
-  const args = [
-    StellarSdk.nativeToScVal(ADMIN_ADDRESS, { type: "address" }),
-    StellarSdk.nativeToScVal(collateralAddress, { type: "address" }),
-    StellarSdk.nativeToScVal(assetAddress, { type: "address" }),
-    StellarSdk.nativeToScVal(amount, { type: "i128" }),
-    StellarSdk.nativeToScVal(recipientAddress, { type: "address" }),
-    StellarSdk.nativeToScVal(expiresAt, { type: "u64" }),
-    StellarSdk.nativeToScVal(Buffer.from(salt), { type: "bytes" }),
-    StellarSdk.nativeToScVal(Buffer.from(sig, "hex"), { type: "bytes" }),
-    StellarSdk.nativeToScVal(Buffer.from(rainAdminPublicKey, "hex"), { type: "bytes" }),
-  ];
+  const { spec } = await Client.from({
+    contractId: coordinatorAddress,
+    networkPassphrase,
+    rpcUrl,
+    server,
+  });
 
-  const transaction = new StellarSdk.TransactionBuilder(account, {
-    fee: StellarSdk.BASE_FEE,
-  })
-    .setNetworkPassphrase(networkPassphrase)
-    .addOperation(contract.call("withdraw_assets", ...args))
-    .setTimeout(180)
-    .build();
+  const encodedArgs = spec.funcArgsToScVals("withdraw_assets", {
+    admin: ADMIN_ADDRESS,
+    collateral: collateralAddress,
+    asset: assetAddress,
+    amount: BigInt(amount),
+    recipient: recipientAddress,
+    expires_at: BigInt(expiresAt),
+    salt: Buffer.from(salt),
+    sig: Buffer.from(sig, "hex"),
+    public_key: Buffer.from(rainAdminPublicKey, "hex"),
+  });
 
-  const preparedTransaction = await rpc.prepareTransaction(transaction);
-  const xdr = preparedTransaction.toEnvelope().toXDR("base64");
+  const assembledTransaction = await AssembledTransaction.build({
+    contractId: coordinatorAddress,
+    method: "withdraw_assets",
+    args: encodedArgs,
+    parseResultXdr: (result) => result,
+    networkPassphrase,
+    rpcUrl,
+    server,
+    simulate: false,
+  });
+
+  await assembledTransaction.simulate();
+
+  const xdrString = assembledTransaction.toXDR();
 
   const result = await stellarWallet.sendTransaction({
     contractId: coordinatorAddress,
-    transaction: xdr,
+    transaction: xdrString,
   });
 
   return result.hash;
@@ -230,6 +242,10 @@ async function main() {
     rainAdminPublicKey, // parameters[7] - hex encoded Rain admin public key
   ] = (signatureData as any).parameters;
 
+  const definedSalt = (signatureData as any).signature.salt;
+  console.log("Defined salt:", definedSalt);
+  
+
   // Step 2: Fetch contracts to resolve the coordinator address
   console.log("\nFetching contracts...");
   const contracts = await getContracts(USER_ID);
@@ -244,8 +260,8 @@ async function main() {
 
   // Step 3: Execute the withdrawal on-chain
   console.log("\nExecuting withdrawal...");
-  // const txHash = await executeWithdrawal(
-  const txHash = await executeWithdrawalRaw(
+  const txHash = await executeWithdrawal(
+  // const txHash = await executeWithdrawalRaw(
     stellarWallet,
     coordinatorAddress,
     collateralProxy,
@@ -257,18 +273,6 @@ async function main() {
     sig,
     rainAdminPublicKey
   );
-  // const txHash = await executeWithdrawalRaw(
-  //   stellarWallet,
-  //   coordinatorAddress,
-  //   collateralProxy,
-  //   assetAddress,
-  //   BigInt(amountValue),
-  //   recipient,
-  //   expiresAt,
-  //   salt,
-  //   sig,
-  //   rainAdminPublicKey
-  // );
 
   console.log("\nWithdrawal complete. Transaction hash:", txHash);
 }
