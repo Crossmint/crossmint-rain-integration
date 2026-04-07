@@ -1,8 +1,9 @@
 import "dotenv/config";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { createCrossmint, CrossmintWallets, StellarWallet } from "@crossmint/wallets-sdk";
+import type { CollateralContract, WithdrawalSignatureResponse } from "./types.js";
 
-const BASE_URL = process.env.RAIN_API_URL || "https://api-dev.raincards.xyz";
+const BASE_URL = "https://api-dev.raincards.xyz";
 
 const USER_ID = "cdf68c70-b4eb-45a2-b59b-01ddb08e86f8";
 const TOKEN = "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA";
@@ -39,7 +40,7 @@ async function getWithdrawalSignature(
   adminAddress: string,
   recipientAddress: string,
   chainId: string
-) {
+): Promise<WithdrawalSignatureResponse> {
   const rainApiKey = process.env.RAIN_API_KEY;
   if (!rainApiKey) throw new Error("RAIN_API_KEY is not set");
 
@@ -65,14 +66,14 @@ async function getWithdrawalSignature(
       );
     }
 
-    return response.json();
+    return response.json() as Promise<WithdrawalSignatureResponse>;
   } catch (err) {
     console.warn(`[getWithdrawalSignature] Request failed (${(err as Error).message}). Falling back to cached response.`);
-    return CACHED_SIGNATURE_RESPONSE;
+    return CACHED_SIGNATURE_RESPONSE as WithdrawalSignatureResponse;
   }
 }
 
-async function getContracts(userId: string) {
+async function getContracts(userId: string): Promise<CollateralContract[]> {
   const rainApiKey = process.env.RAIN_API_KEY;
   if (!rainApiKey) throw new Error("RAIN_API_KEY is not set");
 
@@ -89,7 +90,7 @@ async function getContracts(userId: string) {
     );
   }
 
-  return response.json();
+  return response.json() as Promise<CollateralContract[]>;
 }
 
 async function getCrossmintWallet(): Promise<StellarWallet> {
@@ -112,7 +113,6 @@ async function getCrossmintWallet(): Promise<StellarWallet> {
   return StellarWallet.from(wallet);
 }
 
-// Option B: High-level contract call — Crossmint handles encoding
 async function executeWithdrawal(
   stellarWallet: StellarWallet,
   coordinatorAddress: string,
@@ -125,11 +125,6 @@ async function executeWithdrawal(
   sig: string,
   rainAdminPublicKey: string
 ): Promise<string> {
-
-  const saltHex = Buffer.from(salt).toString("base64");
-  console.log("Salt:", salt);
-  console.log("Hex salt", saltHex);
-
   const result = await stellarWallet.sendTransaction({
     contractId: coordinatorAddress,
     method: "withdraw_assets",
@@ -140,75 +135,10 @@ async function executeWithdrawal(
       amount: amount.toString(),
       recipient: recipientAddress,
       expires_at: expiresAt,
-      salt: saltHex, // type: scSpecTypeBytesN
+      salt: Buffer.from(salt).toString("base64"),
       signature: Buffer.from(sig, "hex").toString("base64"),
       public_key: Buffer.from(rainAdminPublicKey, "hex").toString("base64"),
     },
-  });
-
-  return result.hash;
-}
-
-// Option A: Raw XDR transaction — build with Stellar SDK, sign via Crossmint
-async function executeWithdrawalRaw(
-  stellarWallet: StellarWallet,
-  coordinatorAddress: string,
-  collateralAddress: string,
-  assetAddress: string,
-  amount: bigint,
-  recipientAddress: string,
-  expiresAt: number,
-  salt: number[],
-  sig: string,
-  rainAdminPublicKey: string
-): Promise<string> {
-  const rpcUrl = process.env.STELLAR_RPC_URL;
-  if (!rpcUrl) throw new Error("STELLAR_RPC_URL is not set");
-
-  const { Client, AssembledTransaction } = await import("@stellar/stellar-sdk/contract");
-
-  const server = new StellarSdk.rpc.Server(rpcUrl);
-  const { passphrase: networkPassphrase } = await server.getNetwork();
-
-  const { spec } = await Client.from({
-    contractId: coordinatorAddress,
-    networkPassphrase,
-    rpcUrl,
-    server,
-  });
-
-  const encodedArgs = spec.funcArgsToScVals("withdraw_assets", {
-    caller: ADMIN_ADDRESS,
-    collateral: collateralAddress,
-    asset: assetAddress,
-    amount: BigInt(amount),
-    recipient: recipientAddress,
-    expires_at: BigInt(expiresAt),
-    salt: Buffer.from(salt),
-    signature: Buffer.from(sig, "hex"),
-    public_key: Buffer.from(rainAdminPublicKey, "hex"),
-  });
-
-  const assembledTransaction = await AssembledTransaction.build({
-    contractId: coordinatorAddress,
-    method: "withdraw_assets",
-    args: encodedArgs,
-    parseResultXdr: (result) => result,
-    networkPassphrase,
-    rpcUrl,
-    server,
-    simulate: false,
-  });
-
-  await assembledTransaction.simulate();
-
-  const xdrString = assembledTransaction.toXDR();
-
-  // const signedTransaction = await stellarWallet.signer?.signTransaction(xdrString);
-
-  const result = await stellarWallet.sendTransaction({
-    contractId: coordinatorAddress,
-    transaction: xdrString,
   });
 
   return result.hash;
@@ -229,7 +159,7 @@ async function main() {
     CHAIN_ID
   );
 
-  if ((signatureData as any).status === "pending") {
+  if (signatureData.status === "pending") {
     throw new Error("Signature is pending. Please retry shortly.");
   }
 
@@ -242,16 +172,16 @@ async function main() {
     salt,               // parameters[5] - byte array
     sig,                // parameters[6] - hex encoded signature
     rainAdminPublicKey, // parameters[7] - hex encoded Rain admin public key
-  ] = (signatureData as any).parameters;
+  ] = signatureData.parameters;
 
-  const definedSalt = (signatureData as any).signature.salt;
+  const definedSalt = signatureData.signature.salt;
   console.log("Defined salt:", definedSalt);
   
 
   // Step 2: Fetch contracts to resolve the coordinator address
   console.log("\nFetching contracts...");
   const contracts = await getContracts(USER_ID);
-  const contract = (contracts as any).find((c: any) => c.proxyAddress === collateralProxy);
+  const contract = contracts.find((c) => c.proxyAddress === collateralProxy);
 
   if (!contract) {
     throw new Error(`No contract found for collateral proxy: ${collateralProxy}`);
@@ -263,7 +193,6 @@ async function main() {
   // Step 3: Execute the withdrawal on-chain
   console.log("\nExecuting withdrawal...");
   const txHash = await executeWithdrawal(
-  // const txHash = await executeWithdrawalRaw(
     stellarWallet,
     coordinatorAddress,
     collateralProxy,
