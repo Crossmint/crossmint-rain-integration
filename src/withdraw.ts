@@ -126,7 +126,7 @@ async function executeWithdrawal(
   rainAdminPublicKey: string
 ): Promise<string> {
 
-  const saltHex = Buffer.from(salt).toString("hex");
+  const saltHex = Buffer.from(salt).toString("base64");
   console.log("Salt:", salt);
   console.log("Hex salt", saltHex);
 
@@ -141,8 +141,8 @@ async function executeWithdrawal(
       recipient: recipientAddress,
       expires_at: expiresAt,
       salt: saltHex, // type: scSpecTypeBytesN
-      signature: sig,
-      public_key: rainAdminPublicKey,
+      signature: Buffer.from(sig, "hex").toString("base64"),
+      public_key: Buffer.from(rainAdminPublicKey, "hex").toString("base64"),
     },
   });
 
@@ -262,8 +262,8 @@ async function main() {
 
   // Step 3: Execute the withdrawal on-chain
   console.log("\nExecuting withdrawal...");
-  // const txHash = await executeWithdrawal(
-  const txHash = await executeWithdrawalRaw(
+  const txHash = await executeWithdrawal(
+  // const txHash = await executeWithdrawalRaw(
     stellarWallet,
     coordinatorAddress,
     collateralProxy,
