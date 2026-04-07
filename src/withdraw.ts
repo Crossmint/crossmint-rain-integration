@@ -178,14 +178,14 @@ async function executeWithdrawalRaw(
   });
 
   const encodedArgs = spec.funcArgsToScVals("withdraw_assets", {
-    admin: ADMIN_ADDRESS,
+    caller: ADMIN_ADDRESS,
     collateral: collateralAddress,
     asset: assetAddress,
     amount: BigInt(amount),
     recipient: recipientAddress,
     expires_at: BigInt(expiresAt),
     salt: Buffer.from(salt),
-    sig: Buffer.from(sig, "hex"),
+    signature: Buffer.from(sig, "hex"),
     public_key: Buffer.from(rainAdminPublicKey, "hex"),
   });
 
@@ -203,6 +203,8 @@ async function executeWithdrawalRaw(
   await assembledTransaction.simulate();
 
   const xdrString = assembledTransaction.toXDR();
+
+  // const signedTransaction = await stellarWallet.signer?.signTransaction(xdrString);
 
   const result = await stellarWallet.sendTransaction({
     contractId: coordinatorAddress,
@@ -260,8 +262,8 @@ async function main() {
 
   // Step 3: Execute the withdrawal on-chain
   console.log("\nExecuting withdrawal...");
-  const txHash = await executeWithdrawal(
-  // const txHash = await executeWithdrawalRaw(
+  // const txHash = await executeWithdrawal(
+  const txHash = await executeWithdrawalRaw(
     stellarWallet,
     coordinatorAddress,
     collateralProxy,
