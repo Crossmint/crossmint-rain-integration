@@ -38,7 +38,7 @@ async function main() {
   console.log("Wallet:", ADMIN_ADDRESS);
 
   // Step 1: Get withdrawal signature from Rain API
-  console.log("\nRequesting withdrawal signature...");
+  console.log("Requesting withdrawal signature...");
   const signatureData = await rain.getWithdrawalSignature(
     USER_ID,
     TOKEN,
@@ -64,7 +64,7 @@ async function main() {
   ] = signatureData.parameters;
 
   // Step 2: Fetch contracts to resolve the coordinator address
-  console.log("\nFetching contracts...");
+  console.log("Fetching contracts...");
   const contracts = await rain.getContracts(USER_ID);
   const contract = contracts.find((c) => c.proxyAddress === collateralProxy);
 
@@ -76,7 +76,7 @@ async function main() {
   console.log("Coordinator:", coordinatorAddress);
 
   // Step 3: Execute the withdrawal on-chain
-  console.log("\nExecuting withdrawal...");
+  console.log("Executing withdrawal...");
   const txHash = await rain.executeWithdrawal(
     stellarWallet,
     ADMIN_ADDRESS,
@@ -91,7 +91,7 @@ async function main() {
     rainAdminPublicKey
   );
 
-  console.log("\nWithdrawal complete. Transaction hash:", txHash);
+  console.log("Withdrawal complete. Transaction hash:", txHash);
 }
 
 main().catch((ex) => {
