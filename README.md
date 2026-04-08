@@ -4,6 +4,12 @@ Scripts for integrating [Rain](https://rain.com) card collateral management with
 
 ## Setup
 
+Install dependencies:
+
+```bash
+pnpm i
+```
+
 Copy `.env.example` to `.env` and fill in:
 
 ```
