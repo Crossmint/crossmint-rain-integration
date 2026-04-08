@@ -16,9 +16,10 @@ async function main() {
   console.log("Fetching wallet...");
   const wallet = await crossmint.getWallet(WALLET_ADDRESS, walletSecret);
   console.log("Wallet fetched:", wallet.address);
-
-  console.log(`Transferring USDC to ${RECIPIENT_ADDRESS}...`);
-  const tx = await wallet.send(RECIPIENT_ADDRESS, "usdc", "2");
+  
+  const amountToTransfer = "2"; 
+  console.log(`Transferring ${amountToTransfer} USDC to ${RECIPIENT_ADDRESS}...`);
+  const tx = await wallet.send(RECIPIENT_ADDRESS, "usdc", amountToTransfer);
   console.log(JSON.stringify(tx, null, 2));
 }
 
