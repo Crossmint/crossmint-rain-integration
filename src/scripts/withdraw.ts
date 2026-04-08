@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { CrossmintClient } from "./CrossmintClient.js";
-import { RainClient } from "./RainClient.js";
+import { CrossmintClient } from "../clients/CrossmintClient.js";
+import { RainClient } from "../clients/RainClient.js";
 
 const USER_ID = "cdf68c70-b4eb-45a2-b59b-01ddb08e86f8";
 const TOKEN = "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA";

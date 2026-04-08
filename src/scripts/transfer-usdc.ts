@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { CrossmintClient } from "./CrossmintClient.js";
+import { CrossmintClient } from "../clients/CrossmintClient.js";
 
 const WALLET_ADDRESS = "CDT3EIEVTH4EY4ENHQSQ4DIKS3YISWANZW26U3JK7QPJNK2L3TFNMO7L";
 const RECIPIENT_ADDRESS = "CBGZ54U36DXQLMZTANIFRWRAR52QYEGBNDOXJWE55Z2NEKMRWZRQRLLJ";

@@ -1,5 +1,5 @@
 import type { StellarWallet } from "@crossmint/wallets-sdk";
-import type { CollateralContract, ConsumerApplicationRequest, ConsumerApplicationResponse, WithdrawalSignatureResponse } from "./types.js";
+import type { CollateralContract, ConsumerApplicationRequest, ConsumerApplicationResponse, WithdrawalSignatureResponse } from "../types.js";
 
 const BASE_URL = "https://api-dev.raincards.xyz";
 

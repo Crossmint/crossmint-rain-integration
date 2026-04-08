@@ -6,12 +6,12 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "dev": "tsx src/index.ts",
-    "get-contracts": "tsx src/get-contracts.ts",
-    "transfer-usdc": "tsx src/transfer-usdc.ts",
-    "get-withdrawal-signature": "tsx src/get-withdrawal-signature.ts",
-    "withdraw": "tsx src/withdraw.ts",
-    "start": "node dist/index.js",
+    "create-consumer-application": "tsx src/scripts/create-consumer-application.ts",
+    "get-contracts": "tsx src/scripts/get-contracts.ts",
+    "transfer-usdc": "tsx src/scripts/transfer-usdc.ts",
+    "get-withdrawal-signature": "tsx src/scripts/get-withdrawal-signature.ts",
+    "withdraw": "tsx src/scripts/withdraw.ts",
+    "start": "node dist/scripts/index.js",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],

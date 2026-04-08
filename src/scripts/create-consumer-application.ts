@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Keypair } from "@stellar/stellar-sdk";
-import { CrossmintClient } from "./CrossmintClient.js";
-import { RainClient } from "./RainClient.js";
+import { CrossmintClient } from "../clients/CrossmintClient.js";
+import { RainClient } from "../clients/RainClient.js";
 
 async function main() {
   const apiKey = process.env["CROSSMINT_API_KEY"];
