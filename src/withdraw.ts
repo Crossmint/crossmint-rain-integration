@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createCrossmint, CrossmintWallets, StellarWallet } from "@crossmint/wallets-sdk";
+import { CrossmintClient } from "./CrossmintClient.js";
 import { RainClient } from "./RainClient.js";
 
 const USER_ID = "cdf68c70-b4eb-45a2-b59b-01ddb08e86f8";
@@ -9,32 +9,19 @@ const ADMIN_ADDRESS = "CDT3EIEVTH4EY4ENHQSQ4DIKS3YISWANZW26U3JK7QPJNK2L3TFNMO7L"
 const RECIPIENT_ADDRESS = "CDT3EIEVTH4EY4ENHQSQ4DIKS3YISWANZW26U3JK7QPJNK2L3TFNMO7L";
 const CHAIN_ID = "1501";
 
-async function getCrossmintWallet(): Promise<StellarWallet> {
+async function main() {
   const apiKey = process.env.CROSSMINT_API_KEY;
   if (!apiKey) throw new Error("CROSSMINT_API_KEY is not set");
+
+  const rainApiKey = process.env.RAIN_API_KEY;
+  if (!rainApiKey) throw new Error("RAIN_API_KEY is not set");
 
   const walletSecret = process.env.STELLAR_WALLET_SECRET;
   if (!walletSecret) throw new Error("STELLAR_WALLET_SECRET is not set");
 
-  const crossmint = createCrossmint({ apiKey });
-  const wallets = CrossmintWallets.from(crossmint);
-
-  const wallet = await wallets.getWallet(ADMIN_ADDRESS, {
-    chain: "stellar",
-    recovery: { type: "server", secret: walletSecret },
-  } as any);
-
-  await wallet.useSigner({ type: "server", secret: walletSecret });
-
-  return StellarWallet.from(wallet);
-}
-
-async function main() {
-  const rainApiKey = process.env.RAIN_API_KEY;
-  if (!rainApiKey) throw new Error("RAIN_API_KEY is not set");
-
+  const crossmint = new CrossmintClient(apiKey);
   const rain = new RainClient(rainApiKey);
-  const stellarWallet = await getCrossmintWallet();
+  const stellarWallet = await crossmint.getWallet(ADMIN_ADDRESS, walletSecret);
   console.log("Wallet:", ADMIN_ADDRESS);
 
   // Step 1: Get withdrawal signature from Rain API

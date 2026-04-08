@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Keypair } from "@stellar/stellar-sdk";
-import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";
+import { CrossmintClient } from "./CrossmintClient.js";
 import { RainClient } from "./RainClient.js";
 
 async function main() {
@@ -18,19 +18,11 @@ async function main() {
   console.log("  Secret key (Stellar):", keypair.secret());
   console.log("  Secret key (hex):", secretHex);
 
-  // Initialize Crossmint
-  const crossmint = createCrossmint({ apiKey });
-  const wallets = CrossmintWallets.from(crossmint);
+  const crossmint = new CrossmintClient(apiKey);
 
   // Create a Stellar smart wallet with the keypair as the server signer
   console.log("\nCreating Stellar smart wallet...");
-  const wallet = await wallets.createWallet({
-    chain: "stellar",
-    recovery: {
-      type: "server",
-      secret: secretHex,
-    },
-  });
+  const wallet = await crossmint.createWallet(secretHex);
 
   console.log("Wallet created!");
   console.log("  Address:", wallet.address);
