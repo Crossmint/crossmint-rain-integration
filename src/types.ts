@@ -1,3 +1,50 @@
+export type ConsumerApplicationRequest = {
+  sourceKey: string;
+  ipAddress: string;
+  occupation: string;
+  annualSalary: string;
+  accountPurpose: string;
+  expectedMonthlyVolume: string;
+  isTermsOfServiceAccepted: boolean;
+  hasExistingDocuments: boolean;
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  nationalId: string;
+  countryOfIssue: string;
+  email: string;
+  phoneCountryCode: string;
+  phoneNumber: string;
+  address: {
+    line1: string;
+    city: string;
+    region: string;
+    postalCode: string;
+    countryCode: string;
+  };
+  stellarAddress: string;
+};
+
+export type ConsumerApplicationResponse = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  isActive: boolean;
+  isTermsOfServiceAccepted: boolean;
+  address: {
+    line1: string;
+    city: string;
+    region: string;
+    postalCode: string;
+    countryCode: string;
+  };
+  phoneCountryCode: string;
+  phoneNumber: string;
+  applicationStatus: string;
+  applicationReason: string;
+};
+
 export type CollateralToken = {
   address: string;
   balance: string;
