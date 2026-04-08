@@ -28,7 +28,7 @@ export class RainClient {
 
     const response = await fetch(
       `${BASE_URL}/v1/issuing/users/${userId}/signatures/withdrawals?${params}`,
-      { headers: { "Api-Key": this.apiKey } }
+      { method: "GET", headers: { "Api-Key": this.apiKey } }
     );
 
     if (!response.ok) {
