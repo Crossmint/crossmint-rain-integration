@@ -11,8 +11,7 @@
     "transfer-usdc": "tsx src/scripts/transfer-usdc.ts",
     "get-withdrawal-signature": "tsx src/scripts/get-withdrawal-signature.ts",
     "withdraw": "tsx src/scripts/withdraw.ts",
-    "start": "node dist/scripts/index.js",
-    "typecheck": "tsc --noEmit"
+"typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
