@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { keccak256 } from "js-sha3";
 import { PublicKey } from "@solana/web3.js";
 
 /**
@@ -14,11 +14,11 @@ import { PublicKey } from "@solana/web3.js";
  */
 
 function keccak256Hex(hexData: string): string {
-  return createHash("sha3-256").update(Buffer.from(hexData, "hex")).digest("hex");
+  return keccak256(Buffer.from(hexData, "hex"));
 }
 
 function keccak256Utf8(data: string): string {
-  return createHash("sha3-256").update(data).digest("hex");
+  return keccak256(data);
 }
 
 function encodeAddress(value: PublicKey): string {
@@ -99,6 +99,7 @@ export function getWithdrawSingleSignerMessage(params: {
   receiver: PublicKey;
   asset: PublicKey;
   nonce: number;
+  chainId: bigint;
   amountInAsset: bigint;
   signatureExpirationTime: bigint;
   coordinatorSignatureSalt: Uint8Array;
@@ -108,7 +109,7 @@ export function getWithdrawSingleSignerMessage(params: {
     encodeDomainSeparator(
       "Coordinator",
       "2",
-      900n,
+      params.chainId,
       params.coordinator,
       params.coordinatorSignatureSalt,
     ),

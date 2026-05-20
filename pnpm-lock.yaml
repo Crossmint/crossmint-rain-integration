@@ -23,6 +23,9 @@ importers:
       dotenv:
         specifier: ^17.4.1
         version: 17.4.1
+      js-sha3:
+        specifier: ^0.9.3
+        version: 0.9.3
     devDependencies:
       '@types/node':
         specifier: ^25.5.2
@@ -711,6 +714,9 @@ packages:
     resolution: {integrity: sha512-AauzHcUcqs8OBnCHOkJY280VaTiCm57AbuO7lqzcw7JapGj50BisE3xhksye4zlTSR1+1tAz67wLTl8tEH1obQ==}
     engines: {node: '>=8'}
     hasBin: true
+
+  js-sha3@0.9.3:
+    resolution: {integrity: sha512-BcJPCQeLg6WjEx3FE591wVAevlli8lxsxm9/FzV4HXkV49TmBH38Yvrpce6fjbADGMKFrBMGTqrVz3qPIZ88Gg==}
 
   json-stringify-safe@5.0.1:
     resolution: {integrity: sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==}
@@ -1650,6 +1656,8 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  js-sha3@0.9.3: {}
 
   json-stringify-safe@5.0.1: {}
 

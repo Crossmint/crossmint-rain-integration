@@ -125,7 +125,7 @@ async function main() {
   // Step 5: Build the Ed25519 precompile instruction
   console.log("\nBuilding Ed25519 verification instruction...");
   const signatureSalt = Buffer.from(salt as unknown as number[]);
-  const signatureBytes = Buffer.from(sig, "base64");
+  const signatureBytes = Buffer.from(sig, "hex");
 
   const walletPubkey = new PublicKey(ADMIN_ADDRESS);
   const recipientPubkey = new PublicKey(recipient);
@@ -138,6 +138,7 @@ async function main() {
     receiver: recipientPubkey,
     asset: assetPubkey,
     nonce: 0, // Fetch from on-chain collateral account in production
+    chainId: BigInt(CHAIN_ID),
     amountInAsset: BigInt(amountValue),
     signatureExpirationTime: BigInt(expiresAt),
     coordinatorSignatureSalt: signatureSalt,
