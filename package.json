@@ -11,7 +11,8 @@
     "transfer-usdc": "tsx src/scripts/transfer-usdc.ts",
     "get-withdrawal-signature": "tsx src/scripts/get-withdrawal-signature.ts",
     "withdraw": "tsx src/scripts/withdraw.ts",
-"typecheck": "tsc --noEmit"
+    "solana-withdraw": "tsx src/scripts/solana-withdraw.ts",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,8 @@
   },
   "dependencies": {
     "@crossmint/wallets-sdk": "1.0.6",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
     "@stellar/stellar-sdk": "^15.0.1",
     "dotenv": "^17.4.1"
   }
