@@ -8,6 +8,7 @@
     "build": "tsc",
     "create-consumer-application": "tsx src/scripts/create-consumer-application.ts",
     "get-contracts": "tsx src/scripts/get-contracts.ts",
+    "get-balances": "tsx src/scripts/get-balances.ts",
     "transfer-usdc": "tsx src/scripts/transfer-usdc.ts",
     "get-withdrawal-signature": "tsx src/scripts/get-withdrawal-signature.ts",
     "withdraw": "tsx src/scripts/withdraw.ts",

@@ -62,6 +62,14 @@ export type CollateralContract = {
   contractVersion: number;
 };
 
+export type RainBalances = {
+  creditLimit: number;
+  pendingCharges: number;
+  postedCharges: number;
+  balanceDue: number;
+  spendingPower: number;
+};
+
 export type WithdrawalSignatureResponse = {
   status: "ready" | "pending";
   signature: {

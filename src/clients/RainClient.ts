@@ -1,5 +1,5 @@
 import type { StellarWallet } from "@crossmint/wallets-sdk";
-import type { CollateralContract, ConsumerApplicationRequest, ConsumerApplicationResponse, WithdrawalSignatureResponse } from "../types.js";
+import type { CollateralContract, ConsumerApplicationRequest, ConsumerApplicationResponse, RainBalances, WithdrawalSignatureResponse } from "../types.js";
 
 const BASE_URL = "https://api-dev.raincards.xyz";
 
@@ -38,6 +38,22 @@ export class RainClient {
     }
 
     return response.json() as Promise<WithdrawalSignatureResponse>;
+  }
+
+  async getBalances(rainUserId: string): Promise<RainBalances> {
+    const encodedUserId = encodeURIComponent(rainUserId);
+    const response = await fetch(
+      `${BASE_URL}/v1/issuing/users/${encodedUserId}/balances`,
+      { headers: { "Api-Key": this.apiKey } }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get balances: ${response.status} ${response.statusText}`
+      );
+    }
+
+    return response.json() as Promise<RainBalances>;
   }
 
   async getContracts(userId: string): Promise<CollateralContract[]> {
@@ -87,7 +103,7 @@ export class RainClient {
     return result.hash;
   }
 
-  async createDummyConsumerApplication(stellarAddress: string): Promise<ConsumerApplicationResponse> {
+  async createDummyConsumerApplication(stellarAddress: string, approved: boolean = true): Promise<ConsumerApplicationResponse> {
     const body: ConsumerApplicationRequest = {
       sourceKey: "crossmint",
       ipAddress: "127.0.0.1",
@@ -98,7 +114,7 @@ export class RainClient {
       isTermsOfServiceAccepted: true,
       hasExistingDocuments: true,
       firstName: "testing",
-      lastName: "testingApproved",
+      lastName: approved ? "testingApproved" : "testing",
       birthDate: "1990-01-01",
       nationalId: "121111111",
       countryOfIssue: "US",
