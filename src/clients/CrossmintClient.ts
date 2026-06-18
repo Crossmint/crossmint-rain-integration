@@ -19,8 +19,7 @@ export class CrossmintClient {
   async getWallet(address: string, secret: string): Promise<StellarWallet> {
     const wallet = await this.wallets.getWallet(address, {
       chain: "stellar",
-      recovery: { type: "server", secret },
-    } as any);
+    });
     await wallet.useSigner({ type: "server", secret });
     return StellarWallet.from(wallet);
   }
